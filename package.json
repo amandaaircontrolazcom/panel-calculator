@@ -1,0 +1,9 @@
+{
+  "name": "panel-pricing-calculator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Internal residential panel pricing calculator with Airtable backend",
+  "engines": {
+    "node": ">=18"
+  }
+}
