@@ -43,3 +43,33 @@ module.exports = async (req, res) => {
     }
 
     const isAdmin = String(passcode) === String(process.env.ADMIN_PASSCODE);
+    const q = req.body || {};
+
+    const fields = {
+      'Estimator': q.estimator || 'Unknown',
+      'Reference': q.reference || '',
+      'Job Type': JOB_LABELS[q.jobType] || q.jobType || '',
+      'Panel Summary': q.panelSummary || '',
+      'Panel SKU': q.panelSKU || '',
+      'Mount Type': MOUNT_LABELS[q.mountType] || '',
+      'Location': LOCATION_LABELS[q.location] || '',
+      'Total Price': Number(q.totalPrice) || 0,
+      'Hours': Number(q.hours) || 0,
+      'Breaker Count': Number(q.breakerCount) || 0,
+      'Details JSON': q.detailsJSON || '',
+    };
+
+    if (isAdmin) {
+      fields['Material Cost'] = Number(q.materialCost) || 0;
+      fields['Labor Cost'] = Number(q.laborCost) || 0;
+      fields['Profit'] = Number(q.profit) || 0;
+      fields['Margin %'] = Number(q.margin) || 0;
+    }
+
+    const result = await createRecord('Quotes', fields);
+    res.status(200).json({ ok: true, id: result.id });
+  } catch (err) {
+    console.error('Quote save error:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
