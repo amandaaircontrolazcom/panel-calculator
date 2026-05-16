@@ -253,6 +253,16 @@
     background: var(--surface);
   }
   input[type="number"] { text-align: right; }
+  input[type="number"][readonly], input[type="text"][readonly] {
+    background: var(--surface-alt);
+    color: var(--ink-2);
+    cursor: not-allowed;
+    border-color: var(--line);
+  }
+  input[type="number"][readonly]:focus, input[type="text"][readonly]:focus {
+    background: var(--surface-alt);
+    border-color: var(--line);
+  }
   select {
     font-family: var(--font-sans);
     font-size: 14px;
@@ -838,7 +848,7 @@
             <label>Panel cost ($)</label>
             <div class="input-with-prefix">
               <span class="input-affix input-prefix">$</span>
-              <input type="number" id="panel-cost" value="220" step="5">
+              <input type="number" id="panel-cost" value="220" readonly>
             </div>
           </div>
         </div>
@@ -885,7 +895,7 @@
             </div>
             <div class="check-controls admin-only">
               <span class="label-tag">$</span>
-              <input type="number" id="m-meter-cost" value="110" step="5">
+              <input type="number" id="m-meter-cost" value="110" readonly>
             </div>
           </div>
 
@@ -898,7 +908,7 @@
             </div>
             <div class="check-controls admin-only">
               <span class="label-tag">$</span>
-              <input type="number" id="m-mast-cost" value="85" step="5">
+              <input type="number" id="m-mast-cost" value="85" readonly>
             </div>
           </div>
 
@@ -911,7 +921,7 @@
             </div>
             <div class="check-controls admin-only">
               <span class="label-tag">$</span>
-              <input type="number" id="m-surge-cost" value="165" step="5">
+              <input type="number" id="m-surge-cost" value="165" readonly>
             </div>
           </div>
 
@@ -924,7 +934,7 @@
             </div>
             <div class="check-controls admin-only">
               <span class="label-tag">$</span>
-              <input type="number" id="m-interlock-cost" value="75" step="5">
+              <input type="number" id="m-interlock-cost" value="75" readonly>
             </div>
           </div>
 
@@ -937,7 +947,7 @@
             </div>
             <div class="check-controls admin-only">
               <span class="label-tag">$</span>
-              <input type="number" id="m-drywall-cost" value="200" step="10">
+              <input type="number" id="m-drywall-cost" value="200" readonly>
             </div>
           </div>
 
@@ -950,7 +960,7 @@
             </div>
             <div class="check-controls admin-only">
               <span class="label-tag">$</span>
-              <input type="number" id="m-stucco-cost" value="400" step="10">
+              <input type="number" id="m-stucco-cost" value="400" readonly>
             </div>
           </div>
 
@@ -967,7 +977,7 @@
               <input type="number" id="m-se-feet" value="0" min="0">
               <span class="label-tag">ft</span>
               <span class="label-tag admin-only">×&nbsp;$</span>
-              <input type="number" id="m-se-rate" value="5.5" step="0.25" class="admin-only" style="width:64px">
+              <input type="number" id="m-se-rate" value="5.5" readonly class="admin-only" style="width:64px">
             </div>
           </div>
 
@@ -980,7 +990,7 @@
               <input type="number" id="m-grounds" value="0" min="0">
               <span class="label-tag">rods</span>
               <span class="label-tag admin-only">×&nbsp;$</span>
-              <input type="number" id="m-ground-cost" value="20" step="1" class="admin-only" style="width:64px">
+              <input type="number" id="m-ground-cost" value="20" readonly class="admin-only" style="width:64px">
             </div>
           </div>
 
@@ -1067,77 +1077,88 @@
       </div>
     </div>
 
-    <!-- ADMIN: PRICING CONFIG -->
+    <!-- ADMIN: PRICING CONFIG (READ-ONLY DISPLAY) -->
     <div class="card admin-only">
       <div class="card-head">
         <div class="card-title"><span class="card-num">07</span>Pricing Configuration</div>
-        <div class="card-meta">Admin · saved locally</div>
+        <div class="card-meta">Read-only · edit in Airtable</div>
       </div>
       <div class="card-body">
         <div class="field-grid-3">
           <div class="field">
-            <label>Labor cost rate ($/hr)</label>
+            <label>Gross profit per man-day</label>
             <div class="input-with-prefix">
               <span class="input-affix input-prefix">$</span>
-              <input type="number" id="labor-rate" value="55" min="0" step="5">
+              <input type="number" id="gpmd" value="3200" readonly>
+            </div>
+          </div>
+          <div class="field">
+            <label>Internal labor cost ($/hr)</label>
+            <div class="input-with-prefix">
+              <span class="input-affix input-prefix">$</span>
+              <input type="number" id="labor-rate" value="55" readonly>
             </div>
           </div>
           <div class="field">
             <label>Base labor hours</label>
-            <input type="number" id="labor-base" value="8" min="0" step="0.5">
-          </div>
-          <div class="field">
-            <label>Misc. consumables %</label>
-            <div class="input-with-suffix">
-              <input type="number" id="m-misc-pct" value="8" min="0" max="50" step="1">
-              <span class="input-affix input-suffix">%</span>
-            </div>
+            <input type="number" id="labor-base" value="8" readonly>
           </div>
           <div class="field">
             <label>Material markup</label>
             <div class="input-with-suffix">
-              <input type="number" id="markup-mat" value="40" min="0" step="1">
+              <input type="number" id="markup-mat" value="40" readonly>
               <span class="input-affix input-suffix">%</span>
             </div>
           </div>
           <div class="field">
-            <label>Labor markup</label>
+            <label>Misc. consumables %</label>
             <div class="input-with-suffix">
-              <input type="number" id="markup-labor" value="120" min="0" step="1">
+              <input type="number" id="m-misc-pct" value="8" readonly>
               <span class="input-affix input-suffix">%</span>
             </div>
           </div>
-          <div class="field"></div>
+          <div class="field">
+            <label>Permit (default)</label>
+            <div class="input-with-prefix">
+              <span class="input-affix input-prefix">$</span>
+              <input type="number" id="permit-fee-config" value="150" readonly>
+            </div>
+          </div>
           <div class="field">
             <label>Target margin floor</label>
             <div class="input-with-suffix">
-              <input type="number" id="margin-target" value="35" min="0" max="100" step="1">
+              <input type="number" id="margin-target" value="35" readonly>
               <span class="input-affix input-suffix">%</span>
             </div>
           </div>
           <div class="field">
             <label>Critical margin floor</label>
             <div class="input-with-suffix">
-              <input type="number" id="margin-critical" value="20" min="0" max="100" step="1">
+              <input type="number" id="margin-critical" value="20" readonly>
               <span class="input-affix input-suffix">%</span>
             </div>
           </div>
           <div class="field">
             <label>Semi-flush mount adder</label>
             <div class="input-with-suffix">
-              <input type="number" id="a-semiflush-hrs" value="3" min="0" step="0.5">
+              <input type="number" id="a-semiflush-hrs" value="3" readonly>
               <span class="input-affix input-suffix">hrs</span>
             </div>
           </div>
           <div class="field">
             <label>Pole mount adder</label>
             <div class="input-with-suffix">
-              <input type="number" id="a-pole-hrs" value="2" min="0" step="0.5">
+              <input type="number" id="a-pole-hrs" value="2" readonly>
               <span class="input-affix input-suffix">hrs</span>
             </div>
           </div>
         </div>
-        <div class="hint">Surface mount uses base labor hours with no adder. Semi-flush and pole mount add hours automatically when selected in the Panel section. Settings auto-save to this browser.</div>
+        <div class="hint">
+          <strong style="color: var(--accent);">Display only.</strong>
+          These values reflect what's in Airtable. To change pricing, edit the
+          <code>Pricing - Globals</code> table in Airtable, then click the refresh button (↻) above.
+          Math: customer labor = (hours ÷ 8) × GPMD. Drywall, stucco, and permit are pass-through (no markup).
+        </div>
       </div>
     </div>
 
@@ -1251,8 +1272,9 @@ window._breakerCosts = {};    // overrides keyed by `${brand}-${breakerKey}`
 // ============================================
 const ADMIN_FIELDS = [
   'labor-rate', 'labor-base', 'm-misc-pct',
-  'markup-mat', 'markup-labor',
+  'markup-mat',
   'margin-target', 'margin-critical',
+  'gpmd',
   'm-meter-cost', 'm-mast-cost', 'm-surge-cost', 'm-interlock-cost',
   'm-se-rate', 'm-ground-cost',
   'a-mast-hrs', 'a-longrun-hrs', 'a-tight-hrs', 'a-other-hrs',
@@ -1324,7 +1346,7 @@ function buildBreakerTable() {
         ${b.sub ? `<div class="brk-sub">${b.sub}</div>` : ''}
       </td>
       <td><input type="number" class="brk-qty" data-key="${b.key}" value="0" min="0"></td>
-      <td class="admin-only"><input type="number" class="brk-cost" data-key="${b.key}" value="${getBreakerCost(b.key)}" min="0" step="0.5"></td>
+      <td class="admin-only"><input type="number" class="brk-cost" data-key="${b.key}" value="${getBreakerCost(b.key)}" readonly></td>
       <td class="num admin-only" data-sub="${b.key}">$0</td>
     </tr>
   `).join('');
@@ -1399,17 +1421,8 @@ function num(id) {
 
 function calc() {
   // PANEL
-  const panelCostInput = document.getElementById('panel-cost');
-  if (document.body.classList.contains('admin')) {
-    const amp = document.getElementById('panel-amp').value;
-    const brand = document.getElementById('panel-brand').value;
-    const key = `${brand}-${amp}`;
-    const inputVal = parseFloat(panelCostInput.value);
-    if (!isNaN(inputVal)) window._panelCosts[key] = inputVal;
-  } else {
-    panelCostInput.value = getPanelCost();
-  }
   const panelCost = getPanelCost();
+  document.getElementById('panel-cost').value = panelCost;
 
   // BREAKERS
   const currentBrand = document.getElementById('panel-brand').value;
@@ -1420,16 +1433,8 @@ function calc() {
     const qtyEl = document.querySelector(`.brk-qty[data-key="${b.key}"]`);
     const costEl = document.querySelector(`.brk-cost[data-key="${b.key}"]`);
     const qty = parseFloat(qtyEl.value) || 0;
-    let cost;
-    if (document.body.classList.contains('admin')) {
-      // Admin: input value is authoritative, save it per current brand
-      cost = parseFloat(costEl.value) || 0;
-      window._breakerCosts[`${currentBrand}-${b.key}`] = cost;
-    } else {
-      // Estimator: pull from brand-aware getter (input is hidden anyway)
-      cost = getBreakerCost(b.key);
-      costEl.value = cost;
-    }
+    const cost = getBreakerCost(b.key);
+    if (costEl) costEl.value = cost;
     const sub = qty * cost;
     const subEl = document.querySelector(`[data-sub="${b.key}"]`);
     if (subEl) subEl.textContent = fmt(sub);
@@ -1439,8 +1444,11 @@ function calc() {
   });
   document.getElementById('breaker-meta').textContent = `${breakerCount} breakers · ${usedSpaces} spaces`;
 
-  // MATERIALS
+  // MATERIALS — split into two buckets:
+  //   addlCost = materials that get the standard markup (panel, breakers, meter, mast, SPD, interlock, SE cable, grounds)
+  //   passthroughCost = pure cost pass-throughs (drywall, stucco)
   let addlCost = 0;
+  let passthroughCost = 0;
   const matsList = [];
   if (document.getElementById('m-meter').checked) { addlCost += num('m-meter-cost'); matsList.push('meter'); }
   if (document.getElementById('m-mast').checked) { addlCost += num('m-mast-cost'); matsList.push('mast'); }
@@ -1450,10 +1458,11 @@ function calc() {
   if (grounds > 0) { addlCost += grounds * num('m-ground-cost'); matsList.push(`${grounds} grounds`); }
   if (document.getElementById('m-surge').checked) { addlCost += num('m-surge-cost'); matsList.push('SPD'); }
   if (document.getElementById('m-interlock').checked) { addlCost += num('m-interlock-cost'); matsList.push('interlock'); }
-  if (document.getElementById('m-drywall').checked) { addlCost += num('m-drywall-cost'); matsList.push('drywall'); }
-  if (document.getElementById('m-stucco').checked) { addlCost += num('m-stucco-cost'); matsList.push('stucco'); }
+  if (document.getElementById('m-drywall').checked) { passthroughCost += num('m-drywall-cost'); matsList.push('drywall'); }
+  if (document.getElementById('m-stucco').checked) { passthroughCost += num('m-stucco-cost'); matsList.push('stucco'); }
   document.getElementById('addl-meta').textContent = matsList.length ? matsList.join(' · ') : 'None';
 
+  // Material cost subject to markup (panel + breakers + markable additions + misc consumables)
   const matSubBeforeMisc = panelCost + breakersCost + addlCost;
   const miscCost = matSubBeforeMisc * (num('m-misc-pct') / 100);
   const matCost = matSubBeforeMisc + miscCost;
@@ -1477,19 +1486,31 @@ function calc() {
   else if (mountType === 'pole') hours += num('a-pole-hrs');
   document.getElementById('cond-meta').textContent = condCount === 0 ? 'None' : `${condCount} active`;
 
+  // Internal labor cost (for margin only — does NOT affect customer price)
   const laborRate = num('labor-rate');
   const laborCost = hours * laborRate;
 
+  // GPMD-based labor charge — this is what customer sees
+  const HOURS_PER_DAY = 8;
+  const manDays = hours / HOURS_PER_DAY;
+  const gpmd = num('gpmd');
+  const laborPrice = manDays * gpmd;
+
   // PRICING
   const matMarkup = num('markup-mat') / 100;
-  const laborMarkup = num('markup-labor') / 100;
-  const matPrice = matCost * (1 + matMarkup);
-  const laborPrice = laborCost * (1 + laborMarkup);
-  const permit = num('permit-fee');
-  const totalPrice = matPrice + laborPrice + permit;
-  const totalCost = matCost + laborCost;
+  const matPrice = matCost * (1 + matMarkup);   // marked-up materials
+  const permit = num('permit-fee');             // pass-through
+
+  // Total = marked-up materials + GPMD-based labor + pass-throughs (drywall/stucco) + permit
+  const totalPrice = matPrice + laborPrice + passthroughCost + permit;
+
+  // Internal totals for margin
+  const totalCost = matCost + laborCost + passthroughCost;
   const profit = totalPrice - totalCost - permit;
-  const margin = totalPrice - permit > 0 ? (profit / (totalPrice - permit)) * 100 : 0;
+  // Margin = profit / (revenue excluding pass-throughs)
+  // Excludes permit and the drywall/stucco pass-throughs since those flow at cost.
+  const marginDenom = totalPrice - permit - passthroughCost;
+  const margin = marginDenom > 0 ? (profit / marginDenom) * 100 : 0;
 
   // PANEL META
   const panelAmp = document.getElementById('panel-amp').value;
@@ -1503,8 +1524,8 @@ function calc() {
   document.getElementById('sum-line-label').textContent = JOB_TYPES[activeJob].label;
   document.getElementById('sum-permit-admin').textContent = fmt(permit);
   document.getElementById('sum-labor-cost-label').textContent = document.body.classList.contains('admin')
-    ? `Labor cost · ${hours} hrs @ ${fmt(laborRate)}/hr`
-    : `Labor cost · ${hours} hrs`;
+    ? `Labor cost · ${hours} hrs (${manDays.toFixed(2)} days)`
+    : `Labor · ${hours} hrs`;
   document.getElementById('sum-mat-cost').textContent = fmt(matCost);
   document.getElementById('sum-labor-cost').textContent = fmt(laborCost);
   document.getElementById('sum-profit').textContent = fmt(profit);
@@ -1754,51 +1775,15 @@ function applyPricing(data) {
 
 // Debounced push of admin edits to Airtable
 function scheduleAdminSave() {
-  if (authRole !== 'admin') return;
-  if (saveDebounceTimer) clearTimeout(saveDebounceTimer);
-  setSaveStatus('Saving…', 'saving');
-  saveDebounceTimer = setTimeout(async () => {
-    try {
-      await pushAllAdminEdits();
-      setSaveStatus('Saved', 'saved');
-      setTimeout(() => setSaveStatus(''), 1500);
-    } catch (err) {
-      console.error(err);
-      setSaveStatus('Save failed', 'error');
-    }
-  }, 1200);
+  // No-op: admin pricing fields are now read-only in the UI.
+  // All pricing edits happen in Airtable directly. Use the refresh button
+  // to pull the latest values.
+  return;
 }
 
 async function pushAllAdminEdits() {
-  // Push current panel cost (just the active brand+amp combo)
-  const brand = document.getElementById('panel-brand').value;
-  const amp = document.getElementById('panel-amp').value;
-  const panelCost = parseFloat(document.getElementById('panel-cost').value);
-  if (!isNaN(panelCost)) {
-    await apiSavePricing('panel', `${brand}-${amp}`, panelCost);
-  }
-
-  // Push current breaker costs (all 6, for active brand)
-  for (const b of BREAKER_TYPES) {
-    const costEl = document.querySelector(`.brk-cost[data-key="${b.key}"]`);
-    const cost = parseFloat(costEl.value);
-    if (!isNaN(cost)) {
-      await apiSavePricing('breaker', `${brand}-${b.key}`, cost);
-    }
-  }
-
-  // Push globals
-  const globalsPayload = {};
-  ['labor-rate', 'labor-base', 'markup-mat', 'markup-labor', 'm-misc-pct',
-   'margin-target', 'margin-critical', 'm-meter-cost', 'm-mast-cost',
-   'm-surge-cost', 'm-interlock-cost', 'm-drywall-cost', 'm-stucco-cost',
-   'm-se-rate', 'm-ground-cost', 'permit-fee',
-   'a-mast-hrs', 'a-longrun-hrs', 'a-tight-hrs', 'a-other-hrs',
-   'a-semiflush-hrs', 'a-pole-hrs'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) globalsPayload[id] = parseFloat(el.value);
-  });
-  await apiSavePricing('global', null, globalsPayload);
+  // No-op for the same reason as above.
+  return;
 }
 
 // ============================================
