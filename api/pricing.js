@@ -56,21 +56,41 @@ const GLOBALS_MAP = {
   'Adj Pole Mount Hours': 'a-pole-hrs',
 };
 
+const MOUNT_MAP = {
+  'Surface': 'surface',
+  'Semi-Flush': 'semi-flush',
+  'Pole': 'pole',
+};
+
+const LOCATION_MAP = {
+  'Indoor': 'indoor',
+  'Outdoor': 'outdoor',
+};
+
 async function loadAll() {
-  const [panels, breakers, globals] = await Promise.all([
+  const [panels, breakers, globals, surge] = await Promise.all([
     listRecords('Pricing - Panels'),
     listRecords('Pricing - Breakers'),
     listRecords('Pricing - Globals'),
+    listRecords('Pricing - Surge').catch(() => []),  // optional table
   ]);
 
+  // PANELS: keyed by `${brand}-${amp}-${mount}`. Carries full catalog entry.
   const panelMap = {};
   panels.forEach(r => {
     const brand = BRAND_MAP[r.fields.Brand];
     const amp = r.fields.Amperage;
-    const cost = r.fields.Cost;
-    if (brand && amp && cost != null) {
-      panelMap[`${brand}-${amp}`] = { cost, recordId: r.id };
-    }
+    const mountLabel = r.fields['Mount Type'] || 'Surface';
+    const mount = MOUNT_MAP[mountLabel] || 'surface';
+    if (!brand || !amp) return;
+    const key = `${brand}-${amp}-${mount}`;
+    panelMap[key] = {
+      cost: r.fields.Cost || 0,
+      spaces: r.fields.Spaces || 40,
+      mainBreaker: r.fields['Main Breaker'] || parseInt(amp, 10) || 200,
+      location: LOCATION_MAP[r.fields.Location] || 'indoor',
+      sku: r.fields.SKU || '',
+    };
   });
 
   const breakerMap = {};
@@ -79,15 +99,24 @@ async function loadAll() {
     const type = TYPE_MAP[r.fields.Type];
     const cost = r.fields.Cost;
     if (brand && type && cost != null) {
-      breakerMap[`${brand}-${type}`] = { cost, recordId: r.id };
+      breakerMap[`${brand}-${type}`] = cost;
     }
   });
 
+  // SURGE: keyed by brand
+  const surgeMap = {};
+  surge.forEach(r => {
+    const brand = BRAND_MAP[r.fields.Brand];
+    if (!brand) return;
+    surgeMap[brand] = {
+      sku: r.fields.SKU || '',
+      cost: r.fields.Cost || 0,
+    };
+  });
+
   const globalsMap = {};
-  let globalsRecordId = null;
   if (globals.length > 0) {
     const g = globals[0];
-    globalsRecordId = g.id;
     Object.entries(GLOBALS_MAP).forEach(([airtableField, calcField]) => {
       const val = g.fields[airtableField];
       if (val != null) globalsMap[calcField] = val;
@@ -95,14 +124,10 @@ async function loadAll() {
   }
 
   return {
-    panels: Object.fromEntries(Object.entries(panelMap).map(([k, v]) => [k, v.cost])),
-    breakers: Object.fromEntries(Object.entries(breakerMap).map(([k, v]) => [k, v.cost])),
+    panels: panelMap,
+    breakers: breakerMap,
     globals: globalsMap,
-    meta: {
-      panelRecordsByKey: Object.fromEntries(Object.entries(panelMap).map(([k, v]) => [k, v.recordId])),
-      breakerRecordsByKey: Object.fromEntries(Object.entries(breakerMap).map(([k, v]) => [k, v.recordId])),
-      globalsRecordId,
-    },
+    surge: surgeMap,
   };
 }
 
