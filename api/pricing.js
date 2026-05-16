@@ -32,10 +32,10 @@ const TYPE_MAP = {
 
 // Globals: Airtable field name -> calculator field id
 const GLOBALS_MAP = {
+  'GPMD': 'gpmd',
   'Labor Rate': 'labor-rate',
   'Base Hours': 'labor-base',
   'Material Markup %': 'markup-mat',
-  'Labor Markup %': 'markup-labor',
   'Misc Materials %': 'm-misc-pct',
   'Target Margin %': 'margin-target',
   'Critical Margin %': 'margin-critical',
