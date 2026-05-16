@@ -1407,6 +1407,7 @@ function applyPanelCatalog() {
     document.getElementById('main-breaker'),
     document.getElementById('panel-location'),
     document.getElementById('panel-sku'),
+    document.getElementById('panel-cost'),
   ];
 
   if (customMode) {
@@ -1555,11 +1556,19 @@ function num(id) {
 
 function calc() {
   // PANEL
-  const panelCost = getPanelCost();
-  document.getElementById('panel-cost').value = panelCost;
+  // In Custom mode, the user has typed a panel cost — respect it.
+  // Otherwise pull from the catalog.
+  const customMode = document.getElementById('custom-panel').checked;
+  const panelCostInput = document.getElementById('panel-cost');
+  let panelCost;
+  if (customMode) {
+    panelCost = parseFloat(panelCostInput.value) || 0;
+  } else {
+    panelCost = getPanelCost();
+    panelCostInput.value = panelCost;
+  }
 
   // BREAKERS
-  const currentBrand = document.getElementById('panel-brand').value;
   let breakersCost = 0;
   let breakerCount = 0;
   let usedSpaces = 0;
