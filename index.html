@@ -744,6 +744,7 @@
   <div class="header-actions">
     <span class="save-status" id="save-status"></span>
     <span class="admin-badge">Admin</span>
+    <button class="btn btn-icon admin-only" onclick="refreshPricing()" title="Pull latest pricing from Airtable">↻</button>
     <button class="btn btn-icon" onclick="toggleAdmin()" title="Toggle admin / settings">⚙</button>
     <button class="btn" onclick="resetCalc()">Reset</button>
     <button class="btn" onclick="window.print()">Print</button>
@@ -1260,33 +1261,14 @@ const ADMIN_FIELDS = [
 ];
 
 function loadSettings() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    if (saved.adminMode) document.body.classList.add('admin');
-    if (saved.fields) {
-      Object.entries(saved.fields).forEach(([id, val]) => {
-        const el = document.getElementById(id);
-        if (el) el.value = val;
-      });
-    }
-    if (saved.panelCosts) window._panelCosts = saved.panelCosts;
-    if (saved.breakerCosts) window._breakerCosts = saved.breakerCosts;
-  } catch (e) { /* ignore */ }
+  // No-op: pricing now loads from Airtable via API, not localStorage.
+  // We only keep localStorage for the estimator name and last-used admin mode.
+  // Pricing values are loaded by applyPricing() after auth.
 }
 
 function saveSettings() {
-  const fields = {};
-  ADMIN_FIELDS.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) fields[id] = el.value;
-  });
-  const data = {
-    adminMode: document.body.classList.contains('admin'),
-    fields,
-    panelCosts: window._panelCosts || {},
-    breakerCosts: window._breakerCosts || {},
-  };
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+  // No-op: pricing edits push to Airtable via scheduleAdminSave().
+  // Nothing to save locally anymore.
 }
 
 function getPanelCost() {
@@ -1930,6 +1912,25 @@ async function submitName() {
 // ============================================
 // SAVE QUOTE
 // ============================================
+async function refreshPricing() {
+  try {
+    setSaveStatus('Refreshing…', 'saving');
+    // Clear stored overrides so freshly-loaded values take effect
+    window._panelCosts = {};
+    window._breakerCosts = {};
+    const pricing = await apiLoadPricing();
+    applyPricing(pricing);
+    // Re-apply current job to refresh the breaker schedule with new prices
+    selectJob(activeJob);
+    setSaveStatus('Refreshed', 'saved');
+    setTimeout(() => setSaveStatus(''), 1500);
+  } catch (err) {
+    console.error(err);
+    setSaveStatus('Refresh failed', 'error');
+    alert('Refresh failed: ' + err.message);
+  }
+}
+
 async function saveQuote() {
   if (!authPasscode) {
     alert('Not signed in.');
@@ -2010,6 +2011,11 @@ async function saveQuote() {
 // ============================================
 // INIT
 // ============================================
+// Clear any old pricing cache from previous versions
+try {
+  localStorage.removeItem('panel-calc-settings-v2');
+} catch (e) {}
+
 buildJobButtons();
 buildBreakerTable();
 bindCheckRows();
