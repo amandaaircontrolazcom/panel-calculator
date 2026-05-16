@@ -263,6 +263,13 @@
     background: var(--surface-alt);
     border-color: var(--line);
   }
+  select:disabled {
+    background-color: var(--surface-alt);
+    color: var(--ink-2);
+    cursor: not-allowed;
+    border-color: var(--line);
+    opacity: 1;
+  }
   select {
     font-family: var(--font-sans);
     font-size: 14px;
@@ -793,7 +800,17 @@
         <div class="card-meta" id="panel-meta">—</div>
       </div>
       <div class="card-body">
-        <div class="field-grid-3">
+
+        <!-- Catalog lookup row (top): Brand + Amperage + Mount Type -->
+        <div class="field-grid-3" style="margin-bottom: 14px;">
+          <div class="field">
+            <label>Brand / Series</label>
+            <select id="panel-brand">
+              <option value="siemens" selected>Siemens</option>
+              <option value="eaton-br">Eaton BR</option>
+              <option value="sqd-homeline">Square D Homeline</option>
+            </select>
+          </div>
           <div class="field">
             <label>Amperage</label>
             <select id="panel-amp">
@@ -805,22 +822,6 @@
             </select>
           </div>
           <div class="field">
-            <label>Spaces</label>
-            <select id="panel-spaces">
-              <option value="20">20</option>
-              <option value="30">30</option>
-              <option value="40" selected>40</option>
-              <option value="42">42</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Location</label>
-            <select id="panel-location">
-              <option value="indoor">Indoor (NEMA 1)</option>
-              <option value="outdoor">Outdoor (NEMA 3R)</option>
-            </select>
-          </div>
-          <div class="field">
             <label>Mount Type</label>
             <select id="panel-mount">
               <option value="surface" selected>Surface Mount</option>
@@ -828,21 +829,45 @@
               <option value="pole">Pole Mounted</option>
             </select>
           </div>
+        </div>
+
+        <!-- Custom Panel toggle -->
+        <div class="checks" style="margin-bottom: 14px;">
+          <div class="check" data-check="custom-panel">
+            <input type="checkbox" id="custom-panel">
+            <div class="check-box"></div>
+            <div class="check-main">
+              <div class="check-label">Custom panel (not in catalog)</div>
+              <div class="check-sub" id="catalog-status">Catalog: matched · auto-filled below</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Locked fields (auto-filled from catalog unless Custom is on) -->
+        <div class="field-grid-3">
           <div class="field">
-            <label>Brand / Series</label>
-            <select id="panel-brand">
-              <option value="siemens" selected>Siemens</option>
-              <option value="eaton-br">Eaton BR</option>
-              <option value="sqd-homeline">Square D Homeline</option>
+            <label>Spaces</label>
+            <select id="panel-spaces" disabled>
+              <option value="20">20</option>
+              <option value="30">30</option>
+              <option value="40" selected>40</option>
+              <option value="42">42</option>
             </select>
           </div>
           <div class="field">
             <label>Main Breaker (A)</label>
-            <input type="number" id="main-breaker" value="200" step="5">
+            <input type="number" id="main-breaker" value="200" step="5" readonly>
+          </div>
+          <div class="field">
+            <label>Location</label>
+            <select id="panel-location" disabled>
+              <option value="indoor">Indoor (NEMA 1)</option>
+              <option value="outdoor">Outdoor (NEMA 3R)</option>
+            </select>
           </div>
           <div class="field field-full">
-            <label>Panel Model / SKU (optional)</label>
-            <input type="text" id="panel-sku" placeholder="e.g., SN4040B1200, BR4040B200, HOM4040M200PCVP">
+            <label>Panel Model / SKU</label>
+            <input type="text" id="panel-sku" placeholder="auto-filled from catalog" readonly>
           </div>
           <div class="field admin-only">
             <label>Panel cost ($)</label>
@@ -1248,10 +1273,36 @@ const BREAKER_TYPES = [
   { key: 'df',     name: 'Dual-function',        sub: 'CAFCI / GFCI', spaces: 1, defaultCost: 55 },
 ];
 
-const PANEL_PRICES = {
-  'siemens':      { 100: 110, 125: 140, 150: 180, 200: 220, 400: 720 },
-  'eaton-br':     { 100: 100, 125: 130, 150: 170, 200: 210, 400: 700 },
-  'sqd-homeline': { 100: 110, 125: 140, 150: 180, 200: 220, 400: 720 },
+// PANEL_CATALOG: keyed by `${brand}-${amp}-${mountType}`.
+// Holds the full panel specification including spaces, main breaker, NEMA rating, and SKU.
+// These are seeded defaults — real values come from Airtable "Pricing - Panels" table.
+const PANEL_CATALOG = {
+  // Siemens surface-mount defaults
+  'siemens-100-surface':      { cost: 110, spaces: 20, mainBreaker: 100, location: 'indoor',  sku: '' },
+  'siemens-125-surface':      { cost: 140, spaces: 30, mainBreaker: 125, location: 'indoor',  sku: '' },
+  'siemens-150-surface':      { cost: 180, spaces: 30, mainBreaker: 150, location: 'indoor',  sku: '' },
+  'siemens-200-surface':      { cost: 220, spaces: 40, mainBreaker: 200, location: 'indoor',  sku: '' },
+  'siemens-400-surface':      { cost: 720, spaces: 42, mainBreaker: 400, location: 'indoor',  sku: '' },
+  // Eaton BR surface-mount defaults
+  'eaton-br-100-surface':     { cost: 100, spaces: 20, mainBreaker: 100, location: 'indoor',  sku: '' },
+  'eaton-br-125-surface':     { cost: 130, spaces: 30, mainBreaker: 125, location: 'indoor',  sku: '' },
+  'eaton-br-150-surface':     { cost: 170, spaces: 30, mainBreaker: 150, location: 'indoor',  sku: '' },
+  'eaton-br-200-surface':     { cost: 210, spaces: 40, mainBreaker: 200, location: 'indoor',  sku: '' },
+  'eaton-br-400-surface':     { cost: 700, spaces: 42, mainBreaker: 400, location: 'indoor',  sku: '' },
+  // Square D Homeline surface-mount defaults
+  'sqd-homeline-100-surface': { cost: 110, spaces: 20, mainBreaker: 100, location: 'indoor',  sku: '' },
+  'sqd-homeline-125-surface': { cost: 140, spaces: 30, mainBreaker: 125, location: 'indoor',  sku: '' },
+  'sqd-homeline-150-surface': { cost: 180, spaces: 30, mainBreaker: 150, location: 'indoor',  sku: '' },
+  'sqd-homeline-200-surface': { cost: 220, spaces: 40, mainBreaker: 200, location: 'indoor',  sku: '' },
+  'sqd-homeline-400-surface': { cost: 720, spaces: 42, mainBreaker: 400, location: 'indoor',  sku: '' },
+};
+
+// SURGE_CATALOG: brand → { sku, cost }
+// Seeded defaults — real values come from Airtable "Pricing - Surge" table.
+const SURGE_CATALOG = {
+  'siemens':      { sku: '', cost: 165 },
+  'eaton-br':     { sku: '', cost: 165 },
+  'sqd-homeline': { sku: '', cost: 165 },
 };
 
 // Breaker prices per brand. Value lines (Siemens/BR/Homeline) are roughly
@@ -1293,12 +1344,36 @@ function saveSettings() {
   // Nothing to save locally anymore.
 }
 
-function getPanelCost() {
-  const amp = document.getElementById('panel-amp').value;
+// Look up a panel from the catalog using current dropdown values.
+// Returns the catalog entry or null if no match.
+function lookupPanel() {
   const brand = document.getElementById('panel-brand').value;
-  const key = `${brand}-${amp}`;
-  if (window._panelCosts[key] != null) return window._panelCosts[key];
-  return (PANEL_PRICES[brand] && PANEL_PRICES[brand][amp]) || 220;
+  const amp = document.getElementById('panel-amp').value;
+  const mount = document.getElementById('panel-mount').value;
+  const key = `${brand}-${amp}-${mount}`;
+  // Airtable-loaded data lives in window._panelCatalog (overrides PANEL_CATALOG)
+  if (window._panelCatalog && window._panelCatalog[key]) return window._panelCatalog[key];
+  if (PANEL_CATALOG[key]) return PANEL_CATALOG[key];
+  return null;
+}
+
+function getPanelCost() {
+  const panel = lookupPanel();
+  if (panel) return panel.cost;
+  // Fallback: amperage-based rough default for Custom mode
+  const amp = parseFloat(document.getElementById('panel-amp').value);
+  if (amp >= 400) return 720;
+  if (amp >= 200) return 220;
+  if (amp >= 150) return 180;
+  if (amp >= 125) return 140;
+  return 110;
+}
+
+function getSurgeCost() {
+  const brand = document.getElementById('panel-brand').value;
+  if (window._surgeCatalog && window._surgeCatalog[brand]) return window._surgeCatalog[brand].cost;
+  if (SURGE_CATALOG[brand]) return SURGE_CATALOG[brand].cost;
+  return 165;
 }
 
 function getBreakerCost(breakerKey) {
@@ -1318,7 +1393,62 @@ function syncBreakerCostInputs() {
 function setPanelCostInput() {
   document.getElementById('panel-cost').value = getPanelCost();
   syncBreakerCostInputs();
+  applyPanelCatalog();
   calc();
+}
+
+// Apply catalog data to the locked fields (or unlock if Custom Panel is on).
+// Called whenever Brand, Amperage, Mount Type, or the Custom toggle changes.
+function applyPanelCatalog() {
+  const customMode = document.getElementById('custom-panel').checked;
+  const statusEl = document.getElementById('catalog-status');
+  const lockedFields = [
+    document.getElementById('panel-spaces'),
+    document.getElementById('main-breaker'),
+    document.getElementById('panel-location'),
+    document.getElementById('panel-sku'),
+  ];
+
+  if (customMode) {
+    // Unlock everything
+    lockedFields.forEach(el => {
+      if (el.tagName === 'SELECT') el.disabled = false;
+      else el.removeAttribute('readonly');
+    });
+    document.getElementById('panel-sku').placeholder = 'Enter SKU or leave blank';
+    statusEl.textContent = 'Custom mode · all fields editable';
+    statusEl.style.color = '';
+    return;
+  }
+
+  // Catalog mode — try to find a match
+  const panel = lookupPanel();
+  if (panel) {
+    // Auto-fill from catalog and lock
+    document.getElementById('panel-spaces').value = panel.spaces;
+    document.getElementById('main-breaker').value = panel.mainBreaker;
+    document.getElementById('panel-location').value = panel.location;
+    document.getElementById('panel-sku').value = panel.sku || '';
+    document.getElementById('panel-sku').placeholder = 'auto-filled from catalog';
+
+    lockedFields.forEach(el => {
+      if (el.tagName === 'SELECT') el.disabled = true;
+      else el.setAttribute('readonly', 'readonly');
+    });
+    statusEl.textContent = `Catalog: matched${panel.sku ? ' · ' + panel.sku : ''} · auto-filled below`;
+    statusEl.style.color = '';
+  } else {
+    // No match — silently fall through to custom mode (auto-toggle on)
+    document.getElementById('custom-panel').checked = true;
+    document.querySelector('.check[data-check="custom-panel"]').classList.add('on');
+    lockedFields.forEach(el => {
+      if (el.tagName === 'SELECT') el.disabled = false;
+      else el.removeAttribute('readonly');
+    });
+    document.getElementById('panel-sku').placeholder = 'Enter SKU or leave blank';
+    statusEl.textContent = 'No catalog match · custom mode (edit fields manually)';
+    statusEl.style.color = 'var(--amber)';
+  }
 }
 
 // ============================================
@@ -1382,8 +1512,12 @@ function selectJob(key) {
 
   ['a-mast','a-longrun','a-tight','a-other'].forEach(id => setCheck(id, false));
 
+  // Reset Custom Panel toggle on job change
+  setCheck('custom-panel', false);
+
   document.getElementById('ticker-job').textContent = `Job: ${j.label}`;
   document.getElementById('panel-cost').value = getPanelCost();
+  applyPanelCatalog();
   calc();
 }
 
@@ -1456,7 +1590,15 @@ function calc() {
   if (seFeet > 0) { addlCost += seFeet * num('m-se-rate'); matsList.push(`${seFeet}ft SE`); }
   const grounds = num('m-grounds');
   if (grounds > 0) { addlCost += grounds * num('m-ground-cost'); matsList.push(`${grounds} grounds`); }
-  if (document.getElementById('m-surge').checked) { addlCost += num('m-surge-cost'); matsList.push('SPD'); }
+  if (document.getElementById('m-surge').checked) {
+    // Surge cost is brand-specific — pulled from catalog
+    const surgeCost = getSurgeCost();
+    addlCost += surgeCost;
+    // Sync the visible field so admin sees the right value
+    const surgeInput = document.getElementById('m-surge-cost');
+    if (surgeInput) surgeInput.value = surgeCost;
+    matsList.push('SPD');
+  }
   if (document.getElementById('m-interlock').checked) { addlCost += num('m-interlock-cost'); matsList.push('interlock'); }
   if (document.getElementById('m-drywall').checked) { passthroughCost += num('m-drywall-cost'); matsList.push('drywall'); }
   if (document.getElementById('m-stucco').checked) { passthroughCost += num('m-stucco-cost'); matsList.push('stucco'); }
@@ -1747,12 +1889,24 @@ async function apiSaveQuote(payload) {
 
 // Apply pricing fetched from Airtable to the in-memory defaults
 function applyPricing(data) {
-  // Panels: data.panels is { "siemens-200": 220, ... }
+  // Panels: data.panels is the new catalog format { "siemens-200-surface": {cost, spaces, ...}, ... }
+  // or the legacy flat format { "siemens-200": 220, ... } — handle both for backward compat.
   if (data.panels) {
-    Object.entries(data.panels).forEach(([key, cost]) => {
-      // Override stored values so getPanelCost() picks them up
-      window._panelCosts[key] = cost;
+    window._panelCatalog = {};
+    Object.entries(data.panels).forEach(([key, val]) => {
+      if (typeof val === 'object') {
+        // New catalog format
+        window._panelCatalog[key] = val;
+      } else {
+        // Legacy flat number — assume surface mount
+        window._panelCatalog[`${key}-surface`] = { cost: val, spaces: 40, mainBreaker: 200, location: 'indoor', sku: '' };
+      }
     });
+  }
+
+  // Surge: data.surge is { brandKey: {sku, cost} }
+  if (data.surge) {
+    window._surgeCatalog = data.surge;
   }
 
   // Breakers: data.breakers is { "siemens-single": 8, ... }
@@ -1771,6 +1925,9 @@ function applyPricing(data) {
   }
 
   pricingLoaded = true;
+
+  // After loading, re-apply catalog logic to refresh locked field values
+  if (typeof applyPanelCatalog === 'function') applyPanelCatalog();
 }
 
 // Debounced push of admin edits to Airtable
@@ -2012,6 +2169,12 @@ document.addEventListener('input', () => {
 document.addEventListener('change', calc);
 document.getElementById('panel-amp').addEventListener('change', setPanelCostInput);
 document.getElementById('panel-brand').addEventListener('change', setPanelCostInput);
+document.getElementById('panel-mount').addEventListener('change', setPanelCostInput);
+// Custom panel toggle re-applies catalog logic
+document.getElementById('custom-panel').addEventListener('change', () => {
+  applyPanelCatalog();
+  calc();
+});
 selectJob('swap');
 
 // Allow enter to submit passcode
